@@ -12,7 +12,11 @@ const PORT = process.env.PORT || 5001; // Backend will run on port 5001
 
 // --- Middlewares ---
 // Allow your React app to call this server
-app.use(cors()); 
+app.use(cors({
+  origin: '*', // Allows all origins (you can restrict this to your frontend URL later)
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Make sure PUT is in this list
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allow the auth token
+}));
 // Allow the server to understand JSON
 app.use(express.json()); 
 
