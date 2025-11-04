@@ -6,7 +6,7 @@ const OrderSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  producer: { // We store this to easily find orders for a producer
+  producer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
@@ -16,19 +16,21 @@ const OrderSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
-  // We store a copy of the details in case the original product is deleted
   productDetails: {
      name: String,
-     quantity: String // e.g., "10kg" or "2 dozen"
+     quantity: String
   },
-  customerName: { type: String, required: true }, // From the consumer who ordered
+  customerName: { type: String, required: true },
   
-  // --- ADD THIS FIELD ---
+  // --- THIS IS THE CHANGE ---
   deliveryAddress: {
-    type: String,
-    required: true // Make it mandatory
+    houseNo: { type: String, required: true },
+    area: { type: String, required: true },
+    city: { type: String, required: true },
+    state: { type: String, required: true },
+    pincode: { type: String, required: true }
   },
-  // -----------------------
+  // -------------------------
 
   status: {
     type: String,
