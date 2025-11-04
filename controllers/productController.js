@@ -72,3 +72,32 @@ exports.getProductById = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// @desc    Delete a product
+// @route   DELETE /api/products/:id
+// @access  Private (Producer only)
+exports.deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ msg: 'Product not found' });
+    }
+
+    // --- Security Check ---
+    // Make sure the user deleting the product is the one who created it
+    if (product.producer.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+
+    await Product.deleteOne({ _id: req.params.id });
+
+    res.json({ msg: 'Product removed' });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Product not found' });
+    }
+    res.status(500).send('Server Error');
+  }
+};
