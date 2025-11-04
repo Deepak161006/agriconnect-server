@@ -88,3 +88,38 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+// @desc    Create a new order
+// @route   POST /api/orders
+// @access  Private (Consumer)
+exports.createOrder = async (req, res) => {
+  // 1. Get deliveryAddress from the body
+  const { productId, productDetails, deliveryAddress } = req.body;
+
+  try {
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ msg: 'Product not found' });
+    }
+
+    // 2. Check if address was provided
+    if (!deliveryAddress) {
+      return res.status(400).json({ msg: 'Please provide a delivery address' });
+    }
+
+    const order = new Order({
+      consumer: req.user.id,
+      customerName: req.user.fullName,
+      producer: product.producer,
+      product: productId,
+      productDetails: productDetails,
+      deliveryAddress: deliveryAddress // 3. Save the address
+    });
+
+    const newOrder = await order.save();
+    res.status(201).json(newOrder);
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};

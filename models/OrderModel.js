@@ -22,12 +22,21 @@ const OrderSchema = new mongoose.Schema({
      quantity: String // e.g., "10kg" or "2 dozen"
   },
   customerName: { type: String, required: true }, // From the consumer who ordered
+  
+  // --- ADD THIS FIELD ---
+  deliveryAddress: {
+    type: String,
+    required: true // Make it mandatory
+  },
+  // -----------------------
+
   status: {
     type: String,
     required: true,
     enum: ['Processing', 'Shipped', 'Delivered'],
     default: 'Processing'
-  }
+  },
+  
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', OrderSchema);
