@@ -84,3 +84,32 @@ exports.loginUser = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// ... (keep your registerUser and loginUser functions)
+
+// --- ADD THIS NEW FUNCTION ---
+// @desc    Update a user's location or phone
+// @route   PUT /api/auth/updateme
+// @access  Private
+exports.updateUserProfile = async (req, res) => {
+  const { location, tel } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Update fields if they were provided
+    if (location) user.location = location;
+    if (tel) user.tel = tel;
+
+    await user.save();
+    res.json({ msg: 'Profile updated', user });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};

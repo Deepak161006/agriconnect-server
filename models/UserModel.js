@@ -8,7 +8,12 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     enum: ['Producer', 'Consumer'] // Only allows these two values
+  }, // <-- missing comma added here
+  tel: { type: String },
+  location: {
+    latitude: { type: Number },
+    longitude: { type: Number }
   }
-}, { timestamps: true }); // timestamps adds 'createdAt' and 'updatedAt' fields
+}, { timestamps: true });
 
 module.exports = mongoose.model('User', UserSchema);
