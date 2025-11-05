@@ -7,6 +7,10 @@ exports.createProduct = async (req, res) => {
   const { name, description, price, unit, category, quantity } = req.body;
 
   try {
+    // 1. Get the image URL from req.file (this comes from Cloudinary)
+    //    If no file was uploaded, req.file will be undefined
+    const imageUrl = req.file ? req.file.path : null;
+
     const product = new Product({
       name,
       description,
@@ -14,7 +18,8 @@ exports.createProduct = async (req, res) => {
       unit,
       category,
       quantity,
-      producer: req.user.id // This comes from the authMiddleware
+      image: imageUrl, // <-- THIS IS THE MISSING LINE
+      producer: req.user.id
     });
 
     const newProduct = await product.save();
