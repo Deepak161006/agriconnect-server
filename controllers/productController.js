@@ -78,6 +78,8 @@ exports.getProductById = async (req, res) => {
   }
 };
 
+// ... (keep all your other functions)
+
 // @desc    Delete a product
 // @route   DELETE /api/products/:id
 // @access  Private (Producer only)
@@ -89,20 +91,22 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({ msg: 'Product not found' });
     }
 
-    // --- Security Check ---
-    // Make sure the user deleting the product is the one who created it
+    // Security Check: Make sure the user deleting is the one who created it
     if (product.producer.toString() !== req.user.id) {
       return res.status(401).json({ msg: 'User not authorized' });
     }
 
-    await Product.deleteOne({ _id: req.params.id });
+    // This will remove the image from Cloudinary
+    if (product.image) {
+      const publicId = product.image.split('/').pop().split('.')[0];
+      await cloudinary.uploader.destroy(`agriconnect/${publicId}`);
+    }
 
+    await Product.deleteOne({ _id: req.params.id });
     res.json({ msg: 'Product removed' });
+
   } catch (err) {
     console.error(err.message);
-    if (err.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Product not found' });
-    }
     res.status(500).send('Server Error');
   }
 };

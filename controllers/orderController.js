@@ -86,3 +86,43 @@ exports.updateOrderStatus = async (req, res) => {
     res.status(500).send('Server Error');
   }
 };
+
+// ... (keep all your other functions)
+
+// @desc    Cancel an order (by consumer)
+// @route   DELETE /api/orders/:id
+// @access  Private (Consumer only)
+exports.cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ msg: 'Order not found' });
+    }
+
+    // Security Check 1: Make sure this user created the order
+    if (order.consumer.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'User not authorized' });
+    }
+
+    // Security Check 2: Only allow cancel if still processing
+    if (order.status !== 'Processing') {
+      return res.status(400).json({ msg: 'Order cannot be cancelled once it has been shipped' });
+    }
+
+    // Find the product and add the quantity back to the stock
+    const product = await Product.findById(order.product);
+    if (product) {
+      const orderQuantity = parseInt(order.productDetails.quantity.split(' ')[0]);
+      product.quantity += orderQuantity;
+      await product.save();
+    }
+
+    await Order.deleteOne({ _id: req.params.id });
+    res.json({ msg: 'Order cancelled and stock restored' });
+
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
