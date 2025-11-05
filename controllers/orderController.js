@@ -5,8 +5,8 @@ const Product = require('../models/ProductModel');
 // @route   POST /api/orders
 // @access  Private (Consumer)
 exports.createOrder = async (req, res) => {
-  // 1. Get deliveryAddress from the request body
-  const { productId, productDetails, deliveryAddress } = req.body;
+  // 1. Get the new 'orderQuantity' field
+  const { productId, productDetails, deliveryAddress, orderQuantity } = req.body;
 
   try {
     const product = await Product.findById(productId);
@@ -14,18 +14,23 @@ exports.createOrder = async (req, res) => {
       return res.status(404).json({ msg: 'Product not found' });
     }
 
-    // 2. Add a check to make sure the address was sent
-    if (!deliveryAddress) {
-      return res.status(400).json({ msg: 'Please provide a delivery address' });
+    // 2. CHECK THE STOCK
+    if (product.quantity < orderQuantity) {
+      return res.status(400).json({ msg: 'Not enough product in stock' });
     }
 
+    // 3. SUBTRACT from stock and save the product
+    product.quantity = product.quantity - orderQuantity;
+    await product.save();
+
+    // 4. Create the new order (this is the same as before)
     const order = new Order({
       consumer: req.user.id,
       customerName: req.user.fullName,
       producer: product.producer,
       product: productId,
       productDetails: productDetails,
-      deliveryAddress: deliveryAddress // 3. Save the new address
+      deliveryAddress: deliveryAddress
     });
 
     const newOrder = await order.save();
